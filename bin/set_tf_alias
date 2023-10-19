@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+if ! grep -q 'alias tf="terraform"' ~/.bash_profile; then
+    echo 'alias tf="terraform"' >> ~/.bash_profile
+    source ~/.bash_profile
+    echo "Alias 'tf' for Terraform has been added .bash_profile"
+else
+    echo "Alias 'tf' for Terraform already exists in .bash_profile. No changes made"
+fi        

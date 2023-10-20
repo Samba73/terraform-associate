@@ -18,4 +18,4 @@ vscode:
     - amazonwebservices.aws-toolkit-vscode
     - hashicorp.terraform
     - mhutchie.git-graph
-    - phil294-log-graph              
+    - phil294.git-log--graph              

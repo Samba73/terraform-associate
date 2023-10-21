@@ -3,7 +3,7 @@ resource "aws_instance" "my-server" {
   instance_type = var.instance_type
 
    provisioner "local-exec" {
-    command = "echo The servers IP address is ${self.private_ip}"
+    command = "echo The servers IP address is ${self.public_ip}"
   }
   tags = {
     Name    = "my-server-${local.name}"

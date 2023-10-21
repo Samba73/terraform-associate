@@ -1,4 +1,5 @@
 terraform {
+  /*
   cloud {
     organization = "terraform-associate-samba07"
 
@@ -6,6 +7,7 @@ terraform {
       name = "certification"
     }
   }   
+  */
   required_providers {
     aws = {
       source  = "hashicorp/aws"

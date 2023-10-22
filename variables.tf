@@ -1,6 +1,6 @@
 variable "instance_type" {
   type = string
 }
-locals{
+locals {
   name = "sk"
 }

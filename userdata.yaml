@@ -1,7 +1,8 @@
 #cloud-config
 packages:
-  - httpd
+  - nginx
 runcmd:
-  - sudo systemctl start httpd
-  - sudo systemctl enable httpd 
+  - sudo systemctl start nginx
+  - sudo systemctl enable nginx 
   - sudo mkdir -p /var/www/html 
+  - sudo chown -R ubuntu:ubuntu /var/www/html

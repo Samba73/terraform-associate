@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+touch hello.txt
+
+echo "Hello There!!!" >> hello.txt

@@ -6,6 +6,18 @@ resource "aws_security_group" "mod1_SG" {
   description = "Allow port 80 access for apache server"
   vpc_id      = data.aws_vpc.default.id
 
+  dynamic "ingress" {
+    for_each = local.ingress_rules
+
+    content {
+      from_port = ingress.value.port
+      to_port   = ingress.value.port
+      protocol = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+      description = ingress.value.description
+    }
+  }
+  /*
   ingress = [{
     description      = "http from VPC"
     from_port        = 80
@@ -28,7 +40,7 @@ resource "aws_security_group" "mod1_SG" {
       security_groups  = []
       self             = false
   }]
-
+*/
   egress {
     from_port   = 0
     to_port     = 0
@@ -49,13 +61,22 @@ data "template_file" "user_data" {
   template = file("./userdata.yaml")
 }
 
-resource "aws_instance" "mod1-ec2" {
+resource "aws_instance" "mod1-ec1" {
   ami                    = "ami-002843b0a9e09324a"
   instance_type          = var.instance_type
   key_name               = aws_key_pair.deployer.key_name
   vpc_security_group_ids = [aws_security_group.mod1_SG.id]
-  user_data              = data.template_file.user_data.rendered
+  #user_data              = data.template_file.user_data.rendered
+  user_data = <<-UD
+    #!bin/sh
+    sudo apt-get update 
+    sudo apt-get install nginx -y
+    sudo systemctl status nginx
+    sudo systemctl start nginx
+    sudo chown -R ubuntu:ubuntu /var/www/html
+    sudo echo "<html><body><h1>Hello from Module 1 at instance id `curl http://169.254.169.254/latest/meta-data/instance-id`</h1></body></html>" >> /var/www/html/index.nginx-debian.html
+  UD
   tags = {
-    Name = "MOD1-EC2"
+    Name = "MOD1-EC1"
   }
 }

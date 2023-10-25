@@ -54,7 +54,16 @@ resource "aws_instance" "mod2-ec2" {
   instance_type          = var.instance_type
   key_name               = aws_key_pair.deployer.key_name
   vpc_security_group_ids = [aws_security_group.mod2_SG.id]
-  user_data              = data.template_file.user_data.rendered
+  #user_data              = data.template_file.user_data.renderedassociate_public_ip_address
+  user_data = <<-UD
+    #!bin/sh
+    sudo apt-get update 
+    sudo apt-get install nginx -y
+    sudo systemctl status nginx
+    sudo systemctl start nginx
+    sudo chown -R ubuntu:ubuntu /var/www/html
+    sudo echo "<html><body><h1>Hello from Module 2 at instance id `curl http://169.254.169.254/latest/meta-data/instance-id`</h1></body></html>" >> /var/www/html/index.nginx-debian.html
+  UD
   tags = {
     Name = "Mod2-EC2"
   }

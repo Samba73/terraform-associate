@@ -1,4 +1,4 @@
-
+/*
 data "aws_vpc" "default" {
   id = "vpc-0d7db10de34e56a33"
 }
@@ -59,7 +59,7 @@ resource "aws_instance" "my-server" {
 
   provisioner "file" {
     content     = "Hello Cloud-init"
-    destination = "/var/www/html/index.html"
+    destination = "/tmp/test.txt"
     connection {
       type        = "ssh"
       user        = "ec2-user"
@@ -72,6 +72,7 @@ resource "aws_instance" "my-server" {
     Name = "my-server-${local.name}"
   }
 }
+*/
 /*
 resource "aws_instance" "my-server-2" {
   ami           = "ami-0556fb70e2e8f34b7"
@@ -86,5 +87,13 @@ resource "aws_instance" "my-server-2" {
 module "global" {
   source = "./modules/eu"
     
+}
+*/
+/*
+resource aws_iam_user "users" {
+  #count = length(local.keys)
+  for_each = {for user in var.users_list: user => user}
+  
+  name = each.value
 }
 */

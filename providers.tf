@@ -1,4 +1,10 @@
 terraform {
+ # backend "local" {}
+   backend "s3" {
+    bucket = "samba07-tf-statefile-25oct"
+    key = "statefile/terraform.tfstate"
+    region = "ap-southeast-1"
+  }
   /*
   cloud {
     organization = "terraform-associate-samba07"

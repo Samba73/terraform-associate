@@ -70,6 +70,7 @@ data "aws_subnets" "sn" {
     values = [data.aws_vpc.vpc.id]
   }
 }
+
 resource "aws_launch_configuration" "ec2_launch" {
   image_id = data.aws_ami.ubuntu.id
   instance_type = var.instance_type
@@ -99,6 +100,10 @@ resource "aws_autoscaling_group" "ec2-scale" {
   launch_configuration = aws_launch_configuration.ec2_launch.name
   //availability_zones = ["ap-southeast-1a"]
   vpc_zone_identifier = data.aws_subnets.sn.ids
+  
+  target_group_arns = [aws_lb_target_group.ec2-alb-tg.arn]
+  health_check_type = "ELB"
+
   min_size = 2
   max_size = 5
 
@@ -107,4 +112,61 @@ resource "aws_autoscaling_group" "ec2-scale" {
     value = "tf-asg-example"
     propagate_at_launch = true
   }
+}
+
+resource "aws_lb" "ec2-alb" {
+  name                = "ec2-alb-asg"
+  internal            = false
+  load_balancer_type  = "application"
+  security_groups     = [aws_security_group.instance_SG.id]
+  subnets             = data.aws_subnets.sn.ids
+}
+
+resource "aws_lb_listener" "http" {
+  load_balancer_arn = aws_lb.ec2-alb.arn
+  port = 8080
+  protocol = "HTTP"
+  default_action {
+    type = "forward"
+    target_group_arn = aws_lb_target_group.ec2-alb-tg.arn
+  }
+  
+}
+
+resource "aws_lb_listener_rule" "http-asg-rule" {
+  listener_arn = aws_lb_listener.http.arn
+  priority = 100
+
+  condition {
+    path_pattern {
+      values = ["*"]
+    }  
+  }
+  action {
+    type = "forward"
+    target_group_arn = aws_lb_target_group.ec2-alb-tg.arn
+  }
+}
+
+resource "aws_lb_target_group" "ec2-alb-tg" {
+  name = "ec2-alb-tg"
+  port = var.port
+  protocol = "HTTP"
+  target_type = "instance"
+  vpc_id = data.aws_vpc.vpc.id
+
+  health_check {
+    path = "/"
+    protocol = "HTTP"
+    port = var.port
+    matcher = "200"
+    interval = 15
+    timeout = 3
+    healthy_threshold = 2
+    unhealthy_threshold = 2
+  }
+}
+
+output "alb_dns_name" {
+  value = aws_lb.ec2-alb.dns_name
 }

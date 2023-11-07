@@ -10,11 +10,11 @@ provider "aws" {
 }
 
 module "webserver" {
-  source = "/workspace/terraform-associate/modules/services/webserver-cluster"
+  source = "github.com/Samba73/terraform-associate//services/webserver-cluster?ref=0.2.1"
 
   environ       = var.environ
   instance_type = var.instance_type
   min_size      = var.min_size
-  max_sixe      = var.max_size
+  max_size      = var.max_size
   
 }

@@ -19,35 +19,31 @@ locals {
 resource "aws_security_group" "instance_SG" {
   name        = "${var.environ}-SG"
   description = "Security Group for Ubuntu EC2 instance"
+}
+resource "aws_security_group_rule" "httpinbound" {
+  type              = "ingress"
+  from_port         = local.http_port
+  to_port           = local.http_port
+  protocol          = local.tcp_protocol
+  cidr_blocks       =  local.all_ips
+  security_group_id = aws_security_group.instance_SG.id
+}
+resource "aws_security_group_rule" "sshinbound" {
+  type              = "ingress"
+  from_port         = local.ssh_port
+  to_port           = local.ssh_port
+  protocol          = local.tcp_protocol
+  cidr_blocks       =  local.all_ips
+  security_group_id = aws_security_group.instance_SG.id
+}
 
-  ingress = [{
-    description = "allow 8080 for webserver"
-    from_port   = local.http_port
-    to_port     = local.http_port
-    protocol    = local.tcp_protocol
-    cidr_blocks = local.all_ips
-    ipv6_cidr_blocks = []
-    prefix_list_ids  = []
-    security_groups  = []
-    self             = false
-  },
-  {
-    description = "allow SSH for webserver"
-    from_port   = local.ssh_port
-    to_port     = local.ssh_port
-    protocol    = local.tcp_protocol
-    cidr_blocks = local.all_ips
-    ipv6_cidr_blocks = []
-    prefix_list_ids  = []
-    security_groups  = []
-    self             = false
-  }]
- egress  {
-  from_port = local.any_port
-  to_port   = local.any_port
-  protocol  = local.any_protocol
-  cidr_blocks = local.all_ips
- }
+resource "aws_security_group_rule" "outbound" {
+  type              = "egress"
+  from_port         = local.any_port
+  to_port           = local.any_port
+  protocol          = local.any_protocol
+  cidr_blocks       = local.all_ips
+  security_group_id = aws_security_group.instance_SG.id
 }
 
 data "aws_ami" "ubuntu" {
@@ -80,7 +76,7 @@ resource "aws_instance" "EC2_instance" {
 */
   user_data = <<-EOF
               #!/bin/bash
-              echo "Hello from Terraform" > index.html
+              echo "Hello from Terraform, minor version release" > index.html
               nohup busybox httpd -f -p ${local.http_port} &
               EOF
  // user_data_replace_on_change = true            

@@ -3,7 +3,7 @@ provider "aws" {
 }
 terraform {
     backend "s3"{
-        key = "stage/tf-state"
+        key = "tf-state"
     }
 }
 

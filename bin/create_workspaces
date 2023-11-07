@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+terraform workspace new global
+terraform workspace new stage-dev1
+terraform workspace new stage-dev2
+
+terraform workspace list

@@ -76,7 +76,7 @@ resource "aws_instance" "EC2_instance" {
 */
   user_data = <<-EOF
               #!/bin/bash
-              echo "Hello from Terraform" > index.html
+              echo "Hello from Terraform, minor version release" > index.html
               nohup busybox httpd -f -p ${local.http_port} &
               EOF
  // user_data_replace_on_change = true            

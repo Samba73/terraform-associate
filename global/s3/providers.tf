@@ -1,11 +1,5 @@
 terraform {
-  # cloud {
-  #   organization = "terraform-associate-samba07"
-
-  #   workspaces {
-  #     name = "certification"
-  #   }
-  # } 
+  
   required_providers {
     aws = {
       source  = "hashicorp/aws"

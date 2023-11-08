@@ -27,6 +27,12 @@ resource "aws_instance" "my-server-2" {
 resource "aws_iam_user" "users" {
   #count = 3
   #name = "user${count.index}"
-  count = length(var.users)
-  name  = var.users[count.index]
+  #count = length(var.users)
+  #name  = var.users[count.index]
+
+  for_each = var.users
+  name = each.value
+  tags = {
+    Name = each.key
+  }
 }

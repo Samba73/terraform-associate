@@ -1,3 +1,4 @@
+/*
 resource "aws_instance" "my-server" {
   ami           = "ami-0556fb70e2e8f34b7"
   instance_type = var.instance_type
@@ -6,6 +7,7 @@ resource "aws_instance" "my-server" {
     Name    = "my-server-${local.name}"
   }
 }
+*/
 /*
 resource "aws_instance" "my-server-2" {
   ami           = "ami-0556fb70e2e8f34b7"
@@ -17,7 +19,14 @@ resource "aws_instance" "my-server-2" {
 }
 */
 
-module "global" {
-  source = "./modules/eu"
+# module "global" {
+#   source = "./modules/eu"
     
+# }
+
+resource "aws_iam_user" "users" {
+  #count = 3
+  #name = "user${count.index}"
+  count = length(var.users)
+  name  = var.users[count.index]
 }

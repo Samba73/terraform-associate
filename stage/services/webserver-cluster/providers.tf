@@ -6,6 +6,9 @@ terraform {
   #     name = "certification"
   #   }
   # } 
+  backend "s3" {
+    key = "stage/services-webserver-cluster/terraform-tfstate"
+  }
   required_providers {
     aws = {
       source  = "hashicorp/aws"

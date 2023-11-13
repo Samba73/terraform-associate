@@ -4,3 +4,7 @@ variable "instance_type" {
 locals{
   name = "sk"
 }
+variable "port" {
+  type = string
+  default = "8080"
+}

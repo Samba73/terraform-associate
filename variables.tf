@@ -8,3 +8,7 @@ variable "port" {
   type = string
   default = "8080"
 }
+variable "users" {
+  type = list(string)
+  default = ["Sam", "Pam", "Tam"]
+}

@@ -17,3 +17,9 @@ variable "max_size" {
 variable "cluster-name" {
   type = string
 }
+variable "enable_autoschedule" {
+  type = bool
+}
+variable "server_text" {
+  type = string
+}

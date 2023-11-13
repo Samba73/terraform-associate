@@ -9,16 +9,24 @@ resource "aws_instance" "EC2_instance" {
   instance_type = "t2.micro"
   vpc_security_group_ids = [aws_security_group.instance_SG.id]
 */
+/*
   user_data = <<-EOF
               #!/bin/bash
               echo "Hello from Terraform" > index.html
               nohup busybox httpd -f -p ${var.port} &
               EOF
+*/
  // user_data_replace_on_change = true            
 
  // tags = {
  //   Name = "EC2-Instance"
  // }
+ user_data = templatefile("${path.module}/user-data.sh", {
+  server_text = var.server_text
+  db_name = data.terraform_remote_state.db.outputs.db_name
+  address = data.terraform_remote_state.db.outputs.db_address
+  port = var.port
+ })
  lifecycle {
    create_before_destroy = true
  }
@@ -33,6 +41,7 @@ resource "aws_instance" "EC2_instance" {
 #     }
 # }
 resource "aws_autoscaling_group" "ec2-scale" {
+  name = var.cluster-name
   launch_configuration = aws_launch_configuration.ec2_launch.name
   //availability_zones = ["ap-southeast-1a"]
   vpc_zone_identifier = data.aws_subnets.sn.ids
@@ -42,35 +51,79 @@ resource "aws_autoscaling_group" "ec2-scale" {
 
   min_size = var.min_size
   max_size = var.max_size
-
+  #min_elb_capacity = var.min_size
   tag {
     key = "Name"
     value = var.cluster-name
     propagate_at_launch = true
   }
+  instance_refresh {
+    strategy = "Rolling"
+    preferences {
+      min_healthy_percentage = 50
+    }
+  }
+  
+  # lifecycle {
+  #   create_before_destroy = true
+  # }
+}
+resource "aws_autoscaling_schedule" "scale_up_at_business_hours" {
+  count = var.enable_autoschedule ? 1 : 0
+  scheduled_action_name = "${var.cluster-name}-scale-up-at-business-hours"
+  autoscaling_group_name = aws_autoscaling_group.ec2-scale.name
+  min_size = 2
+  max_size = 10
+  desired_capacity = 10
+  recurrence = "30 0 * * *"
+}
+resource "aws_autoscaling_schedule" "scale_down_end_of_business" {
+  count = var.enable_autoschedule ? 1 : 0
+  scheduled_action_name = "${var.cluster-name}-scale-down-end-of-business"
+  autoscaling_group_name = aws_autoscaling_group.ec2-scale.name
+  min_size = 2
+  max_size = 5
+  desired_capacity = 2
+  recurrence = "55 0 * * *"
 }
 
 resource "aws_security_group" "instance_SG" {
   name        = "allow 8080"
   description = "Security Group for Ubuntu EC2 instance"
 
-  dynamic "ingress" {
-    for_each = local.ingress_rules
+#   dynamic "ingress" {
+#     for_each = local.ingress_rules
 
-    content {
-      from_port = ingress.value.port
-      to_port = ingress.value.port
-      protocol = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
-      description = ingress.value.description
-    }
-  }
- egress  {
-  from_port = 0
-  to_port   = 0
-  protocol  = "-1"
+#     content {
+#       from_port = ingress.value.port
+#       to_port = ingress.value.port
+#       protocol = "tcp"
+#       cidr_blocks = ["0.0.0.0/0"]
+#       description = ingress.value.description
+#     }
+#   }
+#  egress  {
+#   from_port = 0
+#   to_port   = 0
+#   protocol  = "-1"
+#   cidr_blocks = ["0.0.0.0/0"]
+#  }
+}
+resource "aws_security_group_rule" "webserver_inbound" {
+  type = "ingress"
+  from_port = var.port
+  to_port = var.port
+  protocol = "tcp"
   cidr_blocks = ["0.0.0.0/0"]
- }
+  security_group_id = aws_security_group.instance_SG.id
+}
+resource "aws_security_group_rule" "allow_all" {
+  type = "egress"
+  from_port = 0
+  to_port = 0
+  protocol = "-1"
+  cidr_blocks = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.instance_SG.id
 }
 data "aws_ami" "ubuntu" {
   //most_recent = true
@@ -145,3 +198,12 @@ resource "aws_lb_target_group" "ec2-alb-tg" {
     unhealthy_threshold = 2
   }
 }
+data "terraform_remote_state" "db" {
+  backend = "s3"
+  config = {
+    bucket = "tf-backend-samba-07nov2023"
+    key = "stage/data-storage/mysql/terraform.tfstate"
+    region = "ap-southeast-1"
+  }
+}
+

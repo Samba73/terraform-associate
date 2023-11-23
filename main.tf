@@ -110,6 +110,7 @@ output "password" {
   sensitive = true
 }
 */
+/*
 data "aws_secretsmanager_secret" "creds" {
   name = "creds"
 }
@@ -128,4 +129,13 @@ output "password" {
   value = local.creds.password
   sensitive = true
   
+}
+*/
+
+data "aws_caller_identity" "parent" {
+  provider = aws.parent
+}
+
+data "aws_caller_identity" "child" {
+  provider = aws.child
 }

@@ -132,10 +132,10 @@ output "password" {
 }
 */
 
-data "aws_caller_identity" "parent" {
-  provider = aws.parent
-}
-
-data "aws_caller_identity" "child" {
-  provider = aws.child
+module "multi-account" {
+  source = "/workspace/terraform-associate/modules/multi-account"
+  providers = {
+    aws.root = aws.parent
+    aws.oa  = aws.child
+  }
 }

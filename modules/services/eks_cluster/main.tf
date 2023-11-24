@@ -41,7 +41,7 @@ resource "aws_eks_cluster" "cluster" {
 }
 # eks cluster node
 ## els cluster node role (ec2 trust permission)
-data "aws_iam_role_policy_document" "node_assume_role" {
+data "aws_iam_policy_document" "node_assume_role" {
     statement {
         effect = "Allow"
         actions = ["sts:AssumeRole"]
@@ -70,4 +70,22 @@ resource "aws_iam_role_policy_attachment" "AmazonEKSWorkerNodePolicy" {
 }
 # eks node group
 
+resource "aws_eks_node_group" "nodes" {
+  cluster_name = aws_eks_cluster.cluster.name
+  node_group_name = var.cluster_name
+  node_role_arn = aws_iam_role.node_group.arn
+  subnet_ids = data.aws_subnets.default.ids
+  instance_types = var.instance_types
 
+  scaling_config {
+    min_size = var.min_size
+    max_size = var.max_size
+    desired_size = var.desired_size
+  }
+
+  depends_on = [ 
+                  aws_iam_role_policy_attachment.AmazonEC2ContainerRegistryReadOnly, 
+                  aws_iam_role_policy_attachment.AmazonEKS_CNI_Policy, 
+                  aws_iam_role_policy_attachment.AmazonEKSWorkerNodePolicy 
+                ]
+}

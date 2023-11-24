@@ -1,5 +1,6 @@
 variable "cluster_name" {
     type = string
+    
 }
 variable "min_size" {
   type = number

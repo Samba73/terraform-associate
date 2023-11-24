@@ -1,3 +1,4 @@
+image: quadeare/gitpod-kubectl:latest
 tasks:
   - name: tf
     env:
